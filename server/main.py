@@ -1,20 +1,6 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from server import create_app
 
 
-app = Flask(__name__)
-#Change the origins to the domain you want to allow later on for now we are allowing all
-cors = CORS(app, origins='*')
-
-@app.route('/api/users', methods=['GET'])
-def get_users():
-    return jsonify({
-        'users': [
-            'Fei',
-            'Lucas',
-            'Rey']})
-    
-
-
+app = create_app()
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    app.run(debug=True, port=5000)
