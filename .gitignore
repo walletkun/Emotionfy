@@ -25,6 +25,14 @@ dist-ssr
 
 data/
 
+server/models/emotion_model.keras
+server/models/emotion_model_weights.keras
+*.h5
+*.keras
+*.pkl
+models/*.h5
+models/*.keras
+
 #Backend files
 __pycache__/
 *.pyc
