@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+pacakage-lock.json
+pacakage.json
+
 
 # Editor directories and files
 .vscode/*
