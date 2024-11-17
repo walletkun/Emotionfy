@@ -1,5 +1,6 @@
 import cv2 
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 import os
 
@@ -12,9 +13,9 @@ class EmotionService:
         cascade_path = os.path.join(self.project_root, 'models', 'data', 'cascades', 'haarcascade_frontalface_default.xml')
         self.face_cascade = cv2.CascadeClassifier(cascade_path)
         
-        # Load emotion detection model
-        model_path = os.path.join(self.project_root, 'models', 'emotion_model.keras')
-        self.emotion_model = load_model(model_path)
+        # Update this line to use the new h5 file
+        model_path = os.path.join(self.project_root, 'models', 'emotion_model_v2.h5')
+        self.emotion_model = tf.keras.models.load_model(model_path)
         
         # Define emotions (make sure this matches your training data order)
         self.emotions = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
