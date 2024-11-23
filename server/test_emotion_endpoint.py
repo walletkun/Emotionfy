@@ -10,7 +10,7 @@ def check_server():
     try:
         response = requests.get('http://127.0.0.1:5000/health', timeout=5)
         print(f"Server health check response: {response.text}")
-        print(f"Response status code: {response.status_code}")  # Add this line
+        print(f"Response status code: {response.status_code}") 
         print(f"Response headers: {dict(response.headers)}")    
         return response.status_code == 200
     except requests.exceptions.ConnectionError:
