@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Camera } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import { Camera } from "lucide-react";
 
 export const EmotionDetection = ({ onEmotionDetected }) => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -17,7 +17,7 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
       setImagePreview(URL.createObjectURL(file));
 
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append("image", file);
 
       const response = await fetch(
         "http://127.0.0.1:5001/api/emotion/analyze",
@@ -32,31 +32,59 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
         }
       );
 
+      console.log("Response status:", response.status);
+
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+
       if (!response.ok) {
-        throw new Error('Failed to analyze image');
+        throw new Error(`Server error: ${response.status} ${responseText}`);
       }
 
-      const data = await response.json();
-      onEmotionDetected(data);
+      try {
+        const data = JSON.parse(responseText);
+        console.log("Response data:", data);
+        onEmotionDetected(data);
+      } catch (e) {
+        console.error("Failed to parse JSON:", e);
+        throw new Error("Invalid response format from server");
+      }
     } catch (err) {
-      setError(err.message);
-      console.error('Error: ', err);
+      console.error("Error details:", err);
+      setError(err.message || "Failed to analyze image");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRetry = () => {
+    setImagePreview(null);
+    setError(null);
+    fileInputRef.current.value = ""; // Reset file input
+  };
+
+  // Rest of your component remains the same
   return (
     <div className="space-y-6">
       <div className="bg-gray-700 rounded-lg p-4 aspect-video relative overflow-hidden">
         {imagePreview ? (
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            className="w-full h-full object-contain"
-          />
+          <div className="relative">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-full h-full object-contain"
+            />
+            {!loading && !error && (
+              <button
+                onClick={handleRetry}
+                className="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded-md hover:bg-gray-600"
+              >
+                New Image
+              </button>
+            )}
+          </div>
         ) : (
-          <label 
+          <label
             className="w-full h-full flex flex-col items-center justify-center cursor-pointer"
             htmlFor="image-upload"
           >
@@ -76,13 +104,22 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
 
       {loading && (
         <div className="bg-gray-700 rounded-lg p-4">
-          <p className="text-blue-400">Analyzing image...</p>
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+            <p className="text-blue-400">Analyzing image...</p>
+          </div>
         </div>
       )}
 
       {error && (
         <div className="bg-gray-700 rounded-lg p-4">
-          <p className="text-red-400">Error: {error}</p>
+          <p className="text-red-400 mb-2">Error: {error}</p>
+          <button
+            onClick={handleRetry}
+            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+          >
+            Try Again
+          </button>
         </div>
       )}
     </div>

@@ -1,19 +1,31 @@
-from flask import Blueprint, jsonify
+import os
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
 
-spotify_bp = Blueprint('spotify', __name__)
+# Spotify API setup
+def get_spotify_client():
+    sp = Spotify(auth_manager=SpotifyOAuth(
+        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+        redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+        scope="playlist-read-private"
+    ))
+    return sp
 
-@spotify_bp.route('/status', methods=['GET'])
-def status():
-    """Test endpoint to verify Spotify service is reachable"""
-    return jsonify({
-        'status': 'success',
-        'message': 'Spotify service placeholder - not yet implemented'
-    })
+# Function to fetch playlists based on the emotion
+def fetch_playlists_by_emotion(emotion):
+    sp = get_spotify_client()
 
-@spotify_bp.route('/recommendations', methods=['GET'])
-def get_recommendations():
-    """Placeholder for getting Spotify recommendations"""
-    return jsonify({
-        'status': 'not_implemented',
-        'message': 'Spotify recommendations coming soon'
-    })
+    # Search for playlists based on the emotion
+    query = f"{emotion} music"
+    results = sp.search(q=query, type='playlist', limit=5)
+
+    playlists = []
+    for item in results['playlists']['items']:
+        playlists.append({
+            "name": item['name'],
+            "url": item['external_urls']['spotify'],
+            "image_url": item['images'][0]['url'] if item['images'] else None,
+            "description": item.get('description', '')
+        })
+    return playlists

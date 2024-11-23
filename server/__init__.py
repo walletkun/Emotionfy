@@ -14,7 +14,7 @@ load_dotenv()
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    
+    print(app.url_map)
     CORS(app, resources={
         r"/*": {
             "origins": ["http://localhost:5174"],
@@ -44,6 +44,9 @@ def create_app(test_config=None):
     try:
         from server.routes.emotion_routes import emotion_bp
         app.register_blueprint(emotion_bp, url_prefix='/api/emotion')
+
+        from server.routes.spotify_routes import spotify_bp  # Import spotify_bp
+        app.register_blueprint(spotify_bp, url_prefix='/spotify')  # Register blueprint
     except ImportError as e:
         print(f"Error importing blueprints: {str(e)}")
         raise
