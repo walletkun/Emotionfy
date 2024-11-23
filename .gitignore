@@ -42,3 +42,8 @@ __pycache__/
 
 # Environment variables
 .env
+
+# Add these lines to .gitignore
+server/models/emotion_model.keras
+server/models/emotion_model_v2.h5
+server/models/emotion_model_weights.keras
