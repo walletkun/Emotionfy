@@ -1,20 +1,16 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+import os
+import sys
 
+# Add the parent directory to Python path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(parent_dir)
+sys.path.append(parent_dir)
 
-app = Flask(__name__)
-#Change the origins to the domain you want to allow later on for now we are allowing all
-cors = CORS(app, origins='*')
+from server import create_app
 
-@app.route('/api/users', methods=['GET'])
-def get_users():
-    return jsonify({
-        'users': [
-            'Fei',
-            'Lucas',
-            'Rey']})
-    
-
+def main():
+    app = create_app()
+    app.run(debug=True,host='127.0.0.1',port=5001, use_reloader=False)
 
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    main()

@@ -1,0 +1,49 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+pacakage-lock.json
+pacakage.json
+
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+data/
+
+server/models/emotion_model.keras
+server/models/emotion_model_weights.keras
+*.h5
+*.keras
+*.pkl
+models/*.h5
+models/*.keras
+
+#Backend files
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Add these lines to .gitignore
+server/models/emotion_model.keras
+server/models/emotion_model_v2.h5
+server/models/emotion_model_weights.keras
