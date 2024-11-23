@@ -1,7 +1,7 @@
 import os
 import sys
 import pytest
-from server import create_app 
+from server import create_app
 
 def test_app_creation():
     app = create_app()

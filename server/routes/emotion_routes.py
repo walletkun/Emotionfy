@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 import cv2
 import numpy as np
 import traceback
@@ -8,15 +8,18 @@ from server.services.emotion_service import EmotionService
 emotion_bp = Blueprint('emotion', __name__)
 emotion_service = EmotionService()
 
-@emotion_bp.route('/analyze', methods=['POST'])
+@emotion_bp.route('/analyze', methods=['POST', 'OPTIONS'])
 def analyze_emotion():
     """Handle both image upload and camera frame analysis"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     try:
         # Debug request information
         print("Request received:")
         print(f"Content-Type: {request.content_type}")
         print(f"Files: {request.files}")
-        print(f"Is JSON: {request.is_json}")
+        print(f"Headers: {dict(request.headers)}")
         
         if 'image' in request.files:
             # Handle file upload
@@ -60,6 +63,7 @@ def analyze_emotion():
             'top_emotions': emotion_service.get_top_emotions()
         }
         print(f"Sending response: {response}")
+        
         return jsonify(response)
 
     except Exception as e:

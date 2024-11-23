@@ -8,13 +8,15 @@ import time
 def check_server():
     """Check if server is running"""
     try:
-        response = requests.get('http://localhost:5000/health')
+        response = requests.get('http://127.0.0.1:5000/health', timeout=5)
         print(f"Server health check response: {response.text}")
+        print(f"Response status code: {response.status_code}")  # Add this line
+        print(f"Response headers: {dict(response.headers)}")    
         return response.status_code == 200
     except requests.exceptions.ConnectionError:
         return False
 
-def wait_for_server(timeout=30):
+def wait_for_server(timeout=5):
     """Wait for server to start"""
     print("Waiting for server to start...")
     start_time = time.time()
@@ -29,36 +31,35 @@ def wait_for_server(timeout=30):
 
 def test_upload_endpoint():
     """Test the image upload endpoint"""
-    test_image_path = r"C:\Users\72411\Desktop\final_project_CTP\faceify\server\models\data\test_image_happy.jpg"
-    
-    # Verify image exists
-    if not os.path.exists(test_image_path):
-        print(f"Error: Test image not found at {test_image_path}")
-        return False
-    
-    url = "http://localhost:5000/api/emotion/analyze"
+    test_image_path = "/Users/ceo/Desktop/CTP_DATASCI_FRIDAY/final_new_project/faceify/server/models/data/test_happy.jpeg"
+    url = "http://127.0.0.1:5001/api/emotion/analyze"
     
     try:
+        print(f"Opening file: {test_image_path}")
         with open(test_image_path, 'rb') as img:
-            files = {'image': ('test.jpg', img, 'image/jpeg')}
-            print(f"Sending request to {url}")
-            response = requests.post(url, files=files)
+            files = {'image': ('test_happy.jpeg', img, 'image/jpeg')}
+            headers = {
+                'Accept': 'application/json',
+                'User-Agent': 'python-requests/2.31.0'  # Match a standard user agent
+            }
             
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Headers: {response.headers}")
-        print(f"Raw Response: {response.text}")
-        
-        try:
-            json_response = response.json()
-            print("JSON Response:", json_response)
+            response = requests.post(
+                url, 
+                files=files,
+                headers=headers,
+                timeout=30
+            )
+            
+            print(f"Status Code: {response.status_code}")
+            print(f"Headers: {dict(response.headers)}")
+            print(f"Response: {response.text}")
+            
             return response.status_code == 200
-        except requests.exceptions.JSONDecodeError:
-            print("Error: Response is not valid JSON")
-            return False
-            
     except Exception as e:
-        print(f"Error during upload test: {str(e)}")
+        print(f"Error: {str(e)}")
         return False
+
+    
 
 def print_file_info(file_path):
     """Print information about a file"""
@@ -81,7 +82,7 @@ if __name__ == "__main__":
         exit(1)
     
     # Print information about test image
-    test_image_path = r"C:\Users\72411\Desktop\final_project_CTP\faceify\server\models\data\test_image_happy.jpg"
+    test_image_path = "/Users/ceo/Desktop/CTP_DATASCI_FRIDAY/final_new_project/faceify/server/models/data/test_happy.jpeg"
     print("\nChecking test image...")
     print_file_info(test_image_path)
     
