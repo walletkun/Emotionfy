@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Layout } from '../components/Layout';
-import { EmotionDetection } from '../components/EmotionDetection';
-import { EmotionDisplay } from '../components/EmotionDisplay';
-import { PlaylistDisplay } from '../components/PlaylistDisplay';
+import { Layout } from './components/Layout';
+import { EmotionDetection } from './components/EmotionDetection';
+import { EmotionDisplay } from './components/EmotionDisplay';
+import { PlaylistDisplay } from './components/PlaylistDisplay';
 
 export default function App() {
   const [detectedEmotion, setDetectedEmotion] = useState(null);
