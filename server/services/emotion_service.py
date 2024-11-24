@@ -14,7 +14,7 @@ class EmotionService:
         self.face_cascade = cv2.CascadeClassifier(cascade_path)
         
         # Update this line to use the new h5 file
-        model_path = os.path.join(self.project_root, 'models', 'emotion_model_v2.h5')
+        model_path = os.path.join(self.project_root, 'models', 'fixed_emotion_model.h5')
         self.emotion_model = tf.keras.models.load_model(model_path)
         
         # Define emotions (make sure this matches your training data order)
