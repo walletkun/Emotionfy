@@ -1,8 +1,12 @@
+import traceback
+import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
-from server.services.spotify_service import fetch_playlists_by_emotion
+from server.services.spotify_service import fetch_playlists_by_emotion, get_spotify_client
 
 spotify_bp = Blueprint('spotify', __name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Fallback playlists when Spotify API fails
 DEFAULT_PLAYLISTS = {
@@ -43,13 +47,15 @@ DEFAULT_PLAYLISTS = {
     }]
 }
 
-@spotify_bp.route('/test', methods=['GET'])
-def test():
-    """Test endpoint"""
-    return jsonify({
-        'status': 'success',
-        'message': 'Spotify routes working'
-    })
+@spotify_bp.route('/auth', methods=['GET'])
+@cross_origin()
+def get_auth():
+    sp = get_spotify_client()
+    if sp:
+        return jsonify({
+            'token': sp.auth_manager.get_access_token()['access_token']
+        })
+    return jsonify({'error': 'Authentication failed'}), 401
 
 @spotify_bp.route('/recommendations', methods=['POST', 'OPTIONS'])
 @cross_origin()
@@ -58,29 +64,19 @@ def get_recommendations():
         return jsonify({}), 200
 
     try:
-        print("Recommendations endpoint hit!")
         data = request.get_json()
-        print("Request data:", data)
-
         if not data or 'emotion' not in data:
             return jsonify({"error": "Emotion is required"}), 400
 
         emotion = data['emotion'].lower()
-        print(f"Processing emotion: {emotion}")
-
-        # Try to get playlists from Spotify API
-        playlists = fetch_playlists_by_emotion(emotion)
-        
-        # If Spotify API fails or returns no playlists, use fallback
-        if not playlists:
-            print(f"Using fallback playlist for {emotion}")
-            playlists = DEFAULT_PLAYLISTS.get(emotion, DEFAULT_PLAYLISTS['neutral'])
-
-        print(f"Returning playlists: {playlists}")
+        playlists = fetch_playlists_by_emotion(emotion) or DEFAULT_PLAYLISTS.get(emotion, DEFAULT_PLAYLISTS['neutral'])
         return jsonify(playlists)
 
     except Exception as e:
-        print(f"Error in recommendations: {str(e)}")
-        # Return fallback playlist on error
+        logger.error(f"Error in recommendations: {str(e)}")
         emotion = request.get_json().get('emotion', 'neutral').lower()
         return jsonify(DEFAULT_PLAYLISTS.get(emotion, DEFAULT_PLAYLISTS['neutral']))
+
+@spotify_bp.route('/callback')
+def spotify_callback():
+    return jsonify({"status": "success"}), 200

@@ -1,59 +1,36 @@
 import React, { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { Music, Loader } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 
 export const PlaylistDisplay = ({ emotion }) => {
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [iframeFailed, setIframeFailed] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    if (!emotion) return;
-
     const fetchPlaylist = async () => {
-      setLoading(true);
-      setError(null);
-
+      if (!emotion) return;
       try {
-        const dominantEmotion = emotion.results?.[0]?.emotion || "neutral";
-        console.log("Fetching playlist for emotion:", dominantEmotion);
-
-        const response = await fetch(
-          "/api/spotify/recommendations",
-          {
-
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({
-              emotion: dominantEmotion,
-            }),
-          }
-        );
-
-        console.log("Response status:", response.status);
+        setLoading(true);
+        setError(null);
+        const response = await fetch("/api/spotify/recommendations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emotion }),
+        });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error response:", errorText);
-          throw new Error(
-            `Failed to fetch playlist. Status: ${response.status}`
-          );
+          throw new Error("Failed to fetch playlist");
         }
 
-        const playlists = await response.json();
-        console.log("Received playlists:", playlists);
-
-        if (playlists.length > 0) {
-          setPlaylist(playlists[0]);
-        } else {
-          setPlaylist(null);
+        const data = await response.json();
+        if (data?.length > 0) {
+          setPlaylist(data[0]);
         }
-      } catch (err) {
-        console.error("Error fetching playlist:", err);
-        setError("Error fetching playlist: " + err.message);
+      } catch (error) {
+        console.error("Failed to fetch playlist:", error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -62,88 +39,97 @@ export const PlaylistDisplay = ({ emotion }) => {
     fetchPlaylist();
   }, [emotion]);
 
-  PlaylistDisplay.propTypes = {
-    emotion: PropTypes.shape({
-      results: PropTypes.arrayOf(
-        PropTypes.shape({
-          emotion: PropTypes.string,
-          confidence: PropTypes.number,
-          position: PropTypes.shape({
-            x: PropTypes.number,
-            y: PropTypes.number,
-            width: PropTypes.number,
-            height: PropTypes.number,
-          }),
-        })
-      ),
-    }),
+  const getPlaylistId = (url) => {
+    return url?.split("/").pop() || "";
   };
 
-  PlaylistDisplay.defaultProps = {
-    emotion: {
-      results: [
-        {
-          emotion: "neutral",
-        },
-      ],
-    },
+  const handleIframeLoad = () => {
+    setIframeFailed(false);
+  };
+
+  const handleIframeError = () => {
+    setIframeFailed(true);
   };
 
   if (loading) {
     return (
-      <div className="bg-gray-700 rounded-lg p-4 flex items-center justify-center">
-        <Loader className="animate-spin text-blue-400" size={40} />
-        <p className="text-blue-400 ml-2">Fetching playlist...</p>
+      <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-gray-700 rounded-lg p-4">
-        <h2 className="text-xl font-semibold text-red-400">Error</h2>
-        <p className="text-gray-400">{error}</p>
-      </div>
-    );
-  }
-
-  if (!playlist) {
-    return (
-      <div className="bg-gray-700 rounded-lg p-4">
-        <h2 className="text-xl font-semibold text-white">
-          🎵 Emotion Playlist
-        </h2>
-        <p className="text-gray-400">
-          No playlist available for the detected emotion.
+      <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
+        <p className="text-red-400">
+          Failed to load playlist. Please try again.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-700 rounded-lg p-4">
-      <h2 className="text-xl font-semibold text-white flex items-center">
-        <Music className="mr-2 text-yellow-400" />
-        Emotion Playlist
-      </h2>
-      <div className="flex flex-col items-center">
+    <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
+      <div className="flex items-center gap-6 mb-6">
         <img
-          src={playlist.image_url || "https://via.placeholder.com/300"} // Handle missing image
-          alt="playlist cover"
-          className="w-full max-w-sm rounded-lg"
+          src={playlist?.image_url || "/api/placeholder/300/300"}
+          alt={`${emotion || "Upload image"} playlist`}
+          className="w-16 h-16 rounded-lg object-cover shadow-md"
         />
-        <p className="mt-4 text-lg font-medium text-center text-white">
-          {playlist.name}
-        </p>
+        <div>
+          <h2 className="font-semibold text-xl">
+            {playlist?.name ||
+              (emotion ? `${emotion} vibes` : "Upload an image to get started")}
+          </h2>
+          <p className="text-white/70 text-sm mt-1">Spotify Playlist</p>
+        </div>
+      </div>
+
+      {playlist && (
+        <div className="relative mb-4">
+          <div className="relative">
+            <iframe
+              src={`https://open.spotify.com/embed/playlist/${getPlaylistId(
+                playlist.url
+              )}?utm_source=generator&theme=0`}
+              width="100%"
+              height="152"
+              frameBorder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className={`rounded-xl ${iframeFailed ? "hidden" : ""}`}
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+            />
+            {iframeFailed && (
+              <div className="h-[152px] flex items-center justify-center bg-gray-800 rounded-xl">
+                <a
+                  href={playlist.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300"
+                >
+                  Open in Spotify
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {playlist && !iframeFailed && (
         <a
           href={playlist.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 underline text-center mt-2"
+          className="block text-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
         >
           Open in Spotify
         </a>
-      </div>
+      )}
     </div>
   );
 };

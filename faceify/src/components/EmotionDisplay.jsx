@@ -1,16 +1,26 @@
-import React from 'react';
+const getEmotionEmoji = (emotion) => {
+  const emojiMap = {
+    happy: "😊",
+    sad: "😢",
+    angry: "😠",
+    fear: "😨",
+    disgust: "🤢",
+    surprise: "😮",
+    neutral: "😐",
+  };
+  return emojiMap[emotion?.toLowerCase()] || "";
+};
 
-export const EmotionDisplay = ({ emotion, confidence }) => {
+export const EmotionDisplay = ({ emotion }) => {
+  if (!emotion) return null;
+
   return (
     <div className="bg-gray-700 rounded-lg p-4">
       <h2 className="text-2xl font-semibold mb-2">Detected Emotion</h2>
-      {emotion ? (
-        <p className="text-4xl font-bold text-blue-400 capitalize">
-          {emotion} {confidence && `(${(confidence * 100).toFixed(1)}%)`}
-        </p>
-      ) : (
-        <p className="text-4xl font-bold text-gray-500">Upload an image</p>
-      )}
+      <div className="text-4xl flex items-center gap-3">
+        <span className="text-blue-400 capitalize">{emotion}</span>
+        <span>{getEmotionEmoji(emotion)}</span>
+      </div>
     </div>
   );
 };

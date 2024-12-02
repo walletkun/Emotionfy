@@ -2,38 +2,39 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Camera, Upload, StopCircle } from "lucide-react";
 import Webcam from "react-webcam";
 
+const FaceDetectionVisualizer = ({ imageUrl }) => {
+  return (
+    <div className="relative">
+      <img
+        src={imageUrl}
+        alt="Detection visualization"
+        className="w-full h-auto rounded-lg"
+      />
+    </div>
+  );
+};
+
 export const EmotionDetection = ({ onEmotionDetected }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [detectionResults, setDetectionResults] = useState(null);
   const [isUsingCamera, setIsUsingCamera] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
   const fileInputRef = useRef(null);
   const webcamRef = useRef(null);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-
   const intervalRef = useRef(null);
 
   const startCameraCapture = useCallback(() => {
-    console.log("Starting camera capture");
     setIsCameraActive(true);
-    // Capture frame every 2 seconds
     intervalRef.current = setInterval(() => {
       if (webcamRef.current) {
         const screenshot = webcamRef.current.getScreenshot();
         if (screenshot) {
-          console.log("Captured frame, analyzing...");
           analyzeCameraFrame(screenshot);
         }
       }
     }, 2000);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
   }, []);
 
   const stopCameraCapture = useCallback(() => {
@@ -44,35 +45,37 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
     }
   }, []);
 
-  //Convert the image to base64 to blob
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
   const analyzeCameraFrame = async (imageSrc) => {
     try {
       const blob = await fetch(imageSrc).then((res) => res.blob());
       const formData = new FormData();
       formData.append("image", blob, "camera-frame.jpg");
 
-      const response = await fetch(
-        "http://127.0.0.1:5001/api/emotion/analyze",
-        {
-          method: "POST",
-          body: formData,
-          mode: "cors",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const response = await fetch("/api/emotion/analyze", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Emotion detection result:", data);
+      setDetectionResults(data.results);
       onEmotionDetected(data);
     } catch (err) {
       console.error("Camera frame analysis error:", err);
-      setError(err.message);
     }
   };
 
@@ -83,46 +86,23 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
     try {
       setLoading(true);
       setError(null);
+      setDetectionResults(null);
       setImagePreview(URL.createObjectURL(file));
 
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(
-        "http://127.0.0.1:5001/api/emotion/analyze",
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            Accept: "application/json",
-          },
-          mode: "cors",
-        }
-      );
+      const response = await fetch("/api/emotion/analyze", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-      if (response.status === 404) {
-        console.log("No faces detected in frame");
-        // Don't set error, just continue capturing
-        return;
-      }
-
-      console.log("Response status:", response.status);
-
-      const responseText = await response.text();
-      console.log("Raw response:", responseText);
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${responseText}`);
-      }
-
-      try {
-        const data = JSON.parse(responseText);
-        console.log("Response data:", data);
-        onEmotionDetected(data);
-      } catch (e) {
-        console.error("Failed to parse JSON:", e);
-        throw new Error("Invalid response format from server");
-      }
+      const data = await response.json();
+      setDetectionResults(data.results);
+      onEmotionDetected(data);
     } catch (err) {
       console.error("Error details:", err);
       setError(err.message || "Failed to analyze image");
@@ -134,21 +114,27 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
   const handleRetry = () => {
     setImagePreview(null);
     setError(null);
-    fileInputRef.current.value = "";
+    setDetectionResults(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex gap-4 justify-center">
         <button
-          onClick={() => setIsUsingCamera(false)}
+          onClick={() => {
+            setIsUsingCamera(false);
+            stopCameraCapture();
+          }}
           className={`px-4 py-2 rounded-md ${
             !isUsingCamera
               ? "bg-blue-500 text-white"
               : "bg-gray-700 text-gray-300"
           }`}
         >
-          <Upload className="w-5 h-5 inline-block mr-2" />
+          <Upload className="w-5 h-5 inline-block justify-centermr-2" />
           Upload
         </button>
         <button
@@ -164,25 +150,23 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
         </button>
       </div>
 
-      <div className="bg-gray-700 rounded-lg p-4 aspect-video relative overflow-hidden">
+      <div className="bg-gray-700 rounded-lg p-4 relative">
         {isUsingCamera ? (
-          <div className="relative h-full">
+          <div className="relative">
             <Webcam
               ref={webcamRef}
               screenshotFormat="image/jpeg"
-              className="w-full h-full object-contain"
+              className="w-full h-auto"
               mirrored={true}
             />
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
               <button
                 onClick={
                   isCameraActive ? stopCameraCapture : startCameraCapture
                 }
                 className={`px-6 py-3 rounded-md ${
-                  isCameraActive
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-green-500 hover:bg-green-600"
-                } text-white font-semibold shadow-lg transition-colors duration-200`}
+                  isCameraActive ? "bg-red-500" : "bg-green-500"
+                } text-white font-semibold`}
               >
                 {isCameraActive ? (
                   <>
@@ -197,21 +181,26 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
                 )}
               </button>
             </div>
-            {/* Add an overlay to show camera status */}
-            {isCameraActive && (
-              <div className="absolute top-4 right-4 bg-green-500 px-3 py-1 rounded-full text-white text-sm">
-                Camera Active
-              </div>
-            )}
           </div>
-        ) : imagePreview ? (
+        ) : (
           <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-contain"
-            />
-            {!loading && !error && (
+            {imagePreview ? (
+              <FaceDetectionVisualizer
+                imageUrl={imagePreview}
+                detections={detectionResults}
+              />
+            ) : (
+              <label
+                className="w-full aspect-video flex flex-col items-center justify-center cursor-pointer bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                htmlFor="image-upload"
+              >
+                <Upload className="w-24 h-24 text-gray-500 mb-4" />
+                <span className="text-gray-400 text-lg">
+                  Click to upload image
+                </span>
+              </label>
+            )}
+            {imagePreview && !loading && !error && (
               <button
                 onClick={handleRetry}
                 className="absolute top-2 right-2 bg-gray-800 text-white px-3 py-1 rounded-md hover:bg-gray-600"
@@ -220,14 +209,6 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
               </button>
             )}
           </div>
-        ) : (
-          <label
-            className="w-full h-full flex flex-col items-center justify-center cursor-pointer"
-            htmlFor="image-upload"
-          >
-            <Upload className="w-16 h-16 text-gray-500 mb-2" />
-            <span className="text-gray-400">Click to upload image</span>
-          </label>
         )}
         <input
           id="image-upload"
@@ -242,7 +223,7 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
       {loading && (
         <div className="bg-gray-700 rounded-lg p-4">
           <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400" />
             <p className="text-blue-400">Analyzing image...</p>
           </div>
         </div>
@@ -262,3 +243,5 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
     </div>
   );
 };
+
+export default EmotionDetection;

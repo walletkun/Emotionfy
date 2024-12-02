@@ -40,7 +40,7 @@ def test_upload_endpoint():
             files = {'image': ('test_happy.jpeg', img, 'image/jpeg')}
             headers = {
                 'Accept': 'application/json',
-                'User-Agent': 'python-requests/2.31.0'  # Match a standard user agent
+                'User-Agent': 'python-requests/2.31.0'
             }
             
             response = requests.post(

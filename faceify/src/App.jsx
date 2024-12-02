@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Layout } from './components/Layout';
-import { EmotionDetection } from './components/EmotionDetection';
-import { EmotionDisplay } from './components/EmotionDisplay';
-import { PlaylistDisplay } from './components/PlaylistDisplay';
+import React, { useState } from "react";
+import { Layout } from "./components/Layout";
+import { EmotionDetection } from "./components/EmotionDetection";
+import { EmotionDisplay } from "./components/EmotionDisplay";
+import { PlaylistDisplay } from "./components/PlaylistDisplay";
 
 export default function App() {
   const [detectedEmotion, setDetectedEmotion] = useState(null);
@@ -13,22 +13,28 @@ export default function App() {
     if (results.results && results.results[0]) {
       setDetectedEmotion({
         emotion: results.results[0].emotion,
-        confidence: results.results[0].confidence
+        confidence: results.results[0].confidence,
       });
     }
   };
 
   return (
     <Layout>
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <EmotionDetection onEmotionDetected={handleEmotionDetected} />
-          <EmotionDisplay 
-            emotion={detectedEmotion?.emotion}
-            confidence={detectedEmotion?.confidence}
-          />
+      <div className="max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="w-full space-y-8">
+            <EmotionDetection onEmotionDetected={handleEmotionDetected} />
+            {detectedEmotion && (
+              <EmotionDisplay
+                emotion={detectedEmotion.emotion}
+                confidence={detectedEmotion.confidence}
+              />
+            )}
+          </div>
+          <div className="w-full h-full flex items-center justify-center lg:sticky lg:top-8">
+            <PlaylistDisplay emotion={detectedEmotion?.emotion} />
+          </div>
         </div>
-        <PlaylistDisplay emotion={detectedEmotion?.emotion} />
       </div>
     </Layout>
   );
