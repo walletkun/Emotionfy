@@ -36,6 +36,8 @@ server/models/emotion_model_weights.keras
 models/*.h5
 models/*.keras
 
+.cache
+
 #Backend files
 __pycache__/
 *.pyc
