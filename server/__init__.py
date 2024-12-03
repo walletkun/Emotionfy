@@ -21,7 +21,9 @@ def create_app(test_config=None):
         # Import and register blueprints
         from server.routes.emotion_routes import emotion_bp
         from server.routes.spotify_routes import spotify_bp
-
+        from server.routes.chatbot_routes import chatbot_bp
+        app.register_blueprint(chatbot_bp, url_prefix='/api')
+        print("Chatbot blueprint registered at /api/chat")
         app.register_blueprint(emotion_bp, url_prefix='/api/emotion')
         app.register_blueprint(spotify_bp, url_prefix='/api/spotify')
 

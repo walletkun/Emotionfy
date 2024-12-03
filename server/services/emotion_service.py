@@ -10,7 +10,7 @@ class EmotionService:
         
         # Try multiple cascade classifiers
         cascade_paths = [
-            "/Users/ceo/Desktop/CTP_DATASCI_FRIDAY/final_new_project/emotionfy/server/models/data/cascades/haarcascade_frontalface_default.xml",
+            "/Users/lucasyao/Documents/GitHub/faceify/server/models/data/cascades/haarcascade_frontalface_default.xml",
             cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml',
             cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml'
         ]
@@ -28,7 +28,7 @@ class EmotionService:
         if self.face_cascade is None:
             raise Exception("Could not load any face cascade classifier")
         
-        model_path = "/Users/ceo/Desktop/CTP_DATASCI_FRIDAY/final_new_project/emotionfy/server/models/emotion_recognition_model.h5"
+        model_path = "/Users/lucasyao/Documents/GitHub/faceify/server/models/emotion_recognition_model.h5"
         self.emotion_model = load_model(model_path)
         self.emotions = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
         self.emotion_stats = {emotion: 0 for emotion in self.emotions}
