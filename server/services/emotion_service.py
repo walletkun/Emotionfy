@@ -105,10 +105,10 @@ class EmotionService:
             # Parameters optimized for baby faces
             faces = self.face_cascade.detectMultiScale(
                 gray,
-                scaleFactor=1.05,        # More gradual scaling
-                minNeighbors=3,          # More lenient neighbor check
-                minSize=(50, 50),        # Smaller minimum size
-                maxSize=(int(target_width * 0.95), int(target_width * 0.95))  # Allow larger faces
+                scaleFactor=1.05,        
+                minNeighbors=3,         
+                minSize=(50, 50),       
+                maxSize=(int(target_width * 0.95), int(target_width * 0.95)) 
             )
             
             # If no faces found, try alternate parameters
