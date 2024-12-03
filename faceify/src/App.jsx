@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { EmotionDetection } from "./components/EmotionDetection";
 import { EmotionDisplay } from "./components/EmotionDisplay";
 import { PlaylistDisplay } from "./components/PlaylistDisplay";
+import Chatbot from "./components/ChatbotWidget"; // Import the Chatbot component
 
 export default function App() {
   const [detectedEmotion, setDetectedEmotion] = useState(null);
@@ -35,6 +36,12 @@ export default function App() {
             <PlaylistDisplay emotion={detectedEmotion?.emotion} />
           </div>
         </div>
+      </div>
+
+      {/* Add the Chatbot below the existing layout */}
+      <div className="mt-12">
+        <h2 className="text-center text-xl font-bold mb-4">Chat with our Emotion-Aware Bot</h2>
+        <Chatbot />
       </div>
     </Layout>
   );

@@ -49,3 +49,8 @@ __pycache__/
 server/models/emotion_model.keras
 server/models/emotion_model_v2.h5
 server/models/emotion_model_weights.keras
+
+server/models/data/cascades/haarcascade_frontalface_alt_tree.xml
+server/models/data/cascades/haarcascade_frontalface_default.xml
+server/models/data/cascades/haarcascade_frontalface_alt2.xml
+server/services/emotion_service.py
