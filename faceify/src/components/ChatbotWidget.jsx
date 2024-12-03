@@ -34,9 +34,17 @@ const Chatbot = () => {
 
   return (
     <div
-      className="chatbot-container border rounded-lg shadow-lg p-4 bg-white"
-      style={{ fontFamily: "Arial", color: "black" }}
-    >
+  className="chatbot-container border rounded-lg shadow-lg p-4 bg-white"
+  style={{
+    width: "400px",
+    fontFamily: "Arial",
+    color: "black",
+    margin: "auto",
+    display: "block",
+    position: "relative",
+    top: "50px", // Push it down to avoid overlapping
+  }}
+>
       {/* Header Section */}
       <div className="chatbot-header flex items-center mb-4">
         <img

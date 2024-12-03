@@ -40,7 +40,7 @@ export default function App() {
 
       {/* Add the Chatbot below the existing layout */}
       <div className="mt-12">
-        <h2 className="text-center text-xl font-bold mb-4">Chat with our Emotion-Aware Bot</h2>
+        <h2 className="text-center text-xl font-bold mb-4">Check out Chat-bot service</h2>
         <Chatbot />
       </div>
     </Layout>
