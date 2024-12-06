@@ -75,7 +75,7 @@ export const PlaylistDisplay = ({ emotion }) => {
     <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
       <div className="flex items-center gap-6 mb-6">
         <img
-          src={playlist?.image_url || "/api/placeholder/300/300"}
+          src={playlist?.image_url || ""}
           alt={`${emotion || "Upload image"} playlist`}
           className="w-16 h-16 rounded-lg object-cover shadow-md"
         />
