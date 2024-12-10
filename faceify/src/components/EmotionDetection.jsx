@@ -21,20 +21,28 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
   const [detectionResults, setDetectionResults] = useState(null);
   const [isUsingCamera, setIsUsingCamera] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [lastDetectedEmotion, setLastDetectedEmotion] = useState(null);
   const fileInputRef = useRef(null);
   const webcamRef = useRef(null);
   const intervalRef = useRef(null);
+  const lastAnalysisTime = useRef(0);
 
   const startCameraCapture = useCallback(() => {
     setIsCameraActive(true);
+    // Increased interval to 3 seconds (3000ms)
     intervalRef.current = setInterval(() => {
       if (webcamRef.current) {
-        const screenshot = webcamRef.current.getScreenshot();
-        if (screenshot) {
-          analyzeCameraFrame(screenshot);
+        const currentTime = Date.now();
+        // Only analyze if more than 3 seconds have passed since last analysis
+        if (currentTime - lastAnalysisTime.current >= 3000) {
+          const screenshot = webcamRef.current.getScreenshot();
+          if (screenshot) {
+            analyzeCameraFrame(screenshot);
+            lastAnalysisTime.current = currentTime;
+          }
         }
       }
-    }, 2000);
+    }, 3000); // Increased to 3 seconds
   }, []);
 
   const stopCameraCapture = useCallback(() => {
@@ -43,6 +51,8 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    // Reset the last detected emotion when stopping the camera
+    setLastDetectedEmotion(null);
   }, []);
 
   useEffect(() => {
@@ -72,8 +82,16 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
       }
 
       const data = await response.json();
-      setDetectionResults(data.results);
-      onEmotionDetected(data);
+
+      // Only update if the emotion has changed
+      if (
+        !lastDetectedEmotion ||
+        data.emotion !== lastDetectedEmotion.emotion
+      ) {
+        setDetectionResults(data.results);
+        setLastDetectedEmotion(data);
+        onEmotionDetected(data);
+      }
     } catch (err) {
       console.error("Camera frame analysis error:", err);
     }
@@ -102,6 +120,7 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
 
       const data = await response.json();
       setDetectionResults(data.results);
+      setLastDetectedEmotion(data);
       onEmotionDetected(data);
     } catch (err) {
       console.error("Error details:", err);
@@ -115,6 +134,7 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
     setImagePreview(null);
     setError(null);
     setDetectionResults(null);
+    setLastDetectedEmotion(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -122,6 +142,7 @@ export const EmotionDetection = ({ onEmotionDetected }) => {
 
   return (
     <div className="space-y-6">
+      {/* Rest of the JSX remains the same */}
       <div className="flex gap-4 justify-center">
         <button
           onClick={() => {

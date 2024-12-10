@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Music } from "lucide-react";
 
 export const PlaylistDisplay = ({ emotion }) => {
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [iframeFailed, setIframeFailed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const fetchPlaylist = async () => {
@@ -51,6 +50,21 @@ export const PlaylistDisplay = ({ emotion }) => {
     setIframeFailed(true);
   };
 
+  const getPlaceholderBackground = () => {
+    // Map emotions to tailwind background colors
+    const emotionColors = {
+      happy: "bg-yellow-500",
+      sad: "bg-blue-500",
+      energetic: "bg-red-500",
+      calm: "bg-green-500",
+      romantic: "bg-pink-500",
+      // Add more emotions and colors as needed
+      default: "bg-gray-500",
+    };
+
+    return emotionColors[emotion?.toLowerCase()] || emotionColors.default;
+  };
+
   if (loading) {
     return (
       <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
@@ -74,11 +88,19 @@ export const PlaylistDisplay = ({ emotion }) => {
   return (
     <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
       <div className="flex items-center gap-6 mb-6">
-        <img
-          src={playlist?.image_url || ""}
-          alt={`${emotion || "Upload image"} playlist`}
-          className="w-16 h-16 rounded-lg object-cover shadow-md"
-        />
+        {playlist?.image_url ? (
+          <img
+            src={playlist.image_url}
+            alt={`${emotion || "Upload image"} playlist`}
+            className="w-16 h-16 rounded-lg object-cover shadow-md"
+          />
+        ) : (
+          <div
+            className={`w-16 h-16 rounded-lg shadow-md flex items-center justify-center ${getPlaceholderBackground()}`}
+          >
+            <Music className="w-8 h-8 text-white" />
+          </div>
+        )}
         <div>
           <h2 className="font-semibold text-xl">
             {playlist?.name ||
@@ -133,3 +155,5 @@ export const PlaylistDisplay = ({ emotion }) => {
     </div>
   );
 };
+
+export default PlaylistDisplay;
