@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Music } from "lucide-react";
 
 export const PlaylistDisplay = ({ emotion }) => {
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [iframeFailed, setIframeFailed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const fetchPlaylist = async () => {
       if (!emotion) return;
+
       try {
         setLoading(true);
         setError(null);
+
         const response = await fetch("/api/spotify/recommendations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -21,23 +23,37 @@ export const PlaylistDisplay = ({ emotion }) => {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch playlist");
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch playlist");
         }
 
         const data = await response.json();
-        if (data?.length > 0) {
-          setPlaylist(data[0]);
+        if (Array.isArray(data) && data.length > 0) {
+          // Randomly select one playlist from the top 5
+          const randomIndex = Math.floor(
+            Math.random() * Math.min(data.length, 5)
+          );
+          setPlaylist(data[randomIndex]);
+        } else {
+          throw new Error("No playlists found");
         }
       } catch (error) {
         console.error("Failed to fetch playlist:", error);
         setError(error.message);
+
+        // Retry logic for transient failures
+        if (retryCount < 2) {
+          setTimeout(() => {
+            setRetryCount((prev) => prev + 1);
+          }, 2000);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchPlaylist();
-  }, [emotion]);
+  }, [emotion, retryCount]);
 
   const getPlaylistId = (url) => {
     return url?.split("/").pop() || "";
@@ -49,6 +65,21 @@ export const PlaylistDisplay = ({ emotion }) => {
 
   const handleIframeError = () => {
     setIframeFailed(true);
+  };
+
+  const getPlaceholderBackground = () => {
+    // Map emotions to tailwind background colors
+    const emotionColors = {
+      happy: "bg-yellow-500",
+      sad: "bg-blue-500",
+      energetic: "bg-red-500",
+      calm: "bg-green-500",
+      romantic: "bg-pink-500",
+      // Add more emotions and colors as needed
+      default: "bg-gray-500",
+    };
+
+    return emotionColors[emotion?.toLowerCase()] || emotionColors.default;
   };
 
   if (loading) {
@@ -74,11 +105,19 @@ export const PlaylistDisplay = ({ emotion }) => {
   return (
     <div className="w-full max-w-md p-6 backdrop-blur-xl bg-white/10 rounded-2xl text-white shadow-lg">
       <div className="flex items-center gap-6 mb-6">
-        <img
-          src={playlist?.image_url || ""}
-          alt={`${emotion || "Upload image"} playlist`}
-          className="w-16 h-16 rounded-lg object-cover shadow-md"
-        />
+        {playlist?.image_url ? (
+          <img
+            src={playlist.image_url}
+            alt={`${emotion || "Upload image"} playlist`}
+            className="w-16 h-16 rounded-lg object-cover shadow-md"
+          />
+        ) : (
+          <div
+            className={`w-16 h-16 rounded-lg shadow-md flex items-center justify-center ${getPlaceholderBackground()}`}
+          >
+            <Music className="w-8 h-8 text-white" />
+          </div>
+        )}
         <div>
           <h2 className="font-semibold text-xl">
             {playlist?.name ||
@@ -133,3 +172,5 @@ export const PlaylistDisplay = ({ emotion }) => {
     </div>
   );
 };
+
+export default PlaylistDisplay;
