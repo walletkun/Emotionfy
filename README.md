@@ -1,10 +1,11 @@
 # Emotionfy
 
 
-<div> <h1 align="center">Emotion-Driven Playlist Recommendation System 🎵</h1> </div>
+## Emotion-Driven Playlist Recommendation System 🎵
+
 INTRODUCTION
 
-<p align="center"> <img src="static/images/emotionfy_logo.png" alt="Emotionfy Logo" width="200"/> </p> <p> <strong>Emotionfy</strong> is a cutting-edge system that merges the power of emotion detection with personalized music recommendations. Using deep learning for facial emotion recognition and Spotify’s API, this application recommends playlists tailored to the user’s emotional state. Upload an image, and <strong>Emotionfy</strong> will do the rest — analyzing your emotion and curating a playlist to match your mood. </p>
+<p> <strong>Emotionfy</strong> is a cutting-edge system that merges the power of emotion detection with personalized music recommendations. Using deep learning for facial emotion recognition and Spotify’s API, this application recommends playlists tailored to the user’s emotional state. Upload an image, and <strong>Emotionfy</strong> will do the rest — analyzing your emotion and curating a playlist to match your mood. </p>
 TEAM MEMBERS
 
 <p><strong>Rey Reyes</strong>: CNN Researcher, Backend Developer <br> <strong>Lucas Yao</strong>: Backend Developer, Frontend Support <br> <strong>Fei Lin</strong>: Frontend Developer, Backend Support </p>
