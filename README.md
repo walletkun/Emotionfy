@@ -7,10 +7,9 @@
 ---
 
 ## 👥 Team Members
-
-- **Rey Reyes**: CNN Researcher, Backend Developer  
+- **Rey Reyes**: CNN Researcher 
 - **Lucas Yao**: Backend Developer, Frontend Support  
-- **Fei Lin**: Frontend Developer, Backend Support
+- **Fei Lin**: Project Lead, Backend Developer
 
 ---
 
